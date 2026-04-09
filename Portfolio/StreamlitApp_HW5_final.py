@@ -87,7 +87,7 @@ def call_model_api(input_df):
         endpoint_name=MODEL_INFO["endpoint"],
         sagemaker_session=sm_session,
         serializer=JSONSerializer(),
-        deserializer=JSONDeserializer() 
+        deserializer=NumpyDeserializer() 
     )
 
     try:
@@ -132,7 +132,7 @@ if submitted:
 
     input_json = json.dumps({k: user_inputs[k] for k in MODEL_INFO["keys"]})
 
-    res, status = call_model_api(input_json)
+    res, status = call_model_api(user_inputs)
     if status == 200:
         st.metric("Prediction Result", res)
         display_explanation(pd.DataFrame([user_inputs]), session, aws_bucket)
