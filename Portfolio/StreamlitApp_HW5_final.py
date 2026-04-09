@@ -42,7 +42,6 @@ def get_session(aws_id, aws_secret, aws_token):
     )
 
 session = get_session(aws_id, aws_secret, aws_token)
-sm_session = sagemaker.Session(boto_session=session)
 
 # Data & Model Configuration
 MODEL_INFO = {
@@ -82,7 +81,7 @@ def load_shap_explainer(_session, bucket, key, local_path):
 
 # Prediction Logic
 def call_model_api(input_df):
-
+    sm_session = sagemaker.Session(boto_session=session)
     predictor = Predictor(
         endpoint_name=MODEL_INFO["endpoint"],
         sagemaker_session=sm_session,
