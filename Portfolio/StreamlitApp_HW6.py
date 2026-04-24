@@ -123,15 +123,21 @@ def display_explanation(input_df, session, aws_bucket):
     explainer_name = MODEL_INFO["explainer"]
     explainer = load_shap_explainer(session, aws_bucket, posixpath.join('explainer', explainer_name),os.path.join(tempfile.gettempdir(), explainer_name))
     best_pipeline = load_pipeline(session, aws_bucket, 'sklearn-pipeline-deployment')
-from sklearn.pipeline import Pipeline as SklearnPipeline
-preprocessing_pipeline = SklearnPipeline(steps=[
-    best_pipeline.steps[0],  # imputer
-    best_pipeline.steps[2],  # scaler (skip SMOTE)
-])
-input_df_transformed = preprocessing_pipeline.transform(input_df)
-feature_names = best_pipeline[:-2].get_feature_names_out()
-input_df_transformed = pd.DataFrame(input_df_transformed, columns=feature_names)
-shap_values = explainer(input_df_transformed)
+    from sklearn.pipeline import Pipeline as SklearnPipeline
+    preprocessing_pipeline = SklearnPipeline(steps=[
+        best_pipeline.steps[0],
+        best_pipeline.steps[2],
+    ])
+    input_df_transformed = preprocessing_pipeline.transform(input_df)
+    feature_names = ['MSFT', 'JPM', 'AMZN', 'sentiment_textblob']
+    input_df_transformed = pd.DataFrame(input_df_transformed, columns=feature_names)
+    shap_values = explainer(input_df_transformed)
+    st.subheader("🔍 Decision Transparency (SHAP)")
+    fig, ax = plt.subplots(figsize=(10, 4))
+    shap.plots.waterfall(shap_values[0, :, 0])
+    st.pyplot(fig)
+    top_feature = pd.Series(shap_values[0, :, 0].values, index=shap_values[0, :, 0].feature_names).abs().idxmax()
+    st.info(f"**Business Insight:** The most influential factor in this decision was **{top_feature}**.")
     
     st.subheader("🔍 Decision Transparency (SHAP)")
     fig, ax = plt.subplots(figsize=(10, 4))
