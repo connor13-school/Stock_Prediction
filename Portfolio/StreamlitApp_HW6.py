@@ -122,17 +122,16 @@ def call_model_api(input_df):
 def display_explanation(input_df, session, aws_bucket):
     explainer_name = MODEL_INFO["explainer"]
     explainer = load_shap_explainer(session, aws_bucket, posixpath.join('explainer', explainer_name),os.path.join(tempfile.gettempdir(), explainer_name))
-    
     best_pipeline = load_pipeline(session, aws_bucket, 'sklearn-pipeline-deployment')
-    from sklearn.pipeline import Pipeline as SklearnPipeline
+from sklearn.pipeline import Pipeline as SklearnPipeline
 preprocessing_pipeline = SklearnPipeline(steps=[
     best_pipeline.steps[0],  # imputer
     best_pipeline.steps[2],  # scaler (skip SMOTE)
 ])
 input_df_transformed = preprocessing_pipeline.transform(input_df)
-    feature_names = best_pipeline[:-2].get_feature_names_out()
-    input_df_transformed = pd.DataFrame(input_df_transformed, columns=feature_names)
-    shap_values = explainer(input_df_transformed)
+feature_names = best_pipeline[:-2].get_feature_names_out()
+input_df_transformed = pd.DataFrame(input_df_transformed, columns=feature_names)
+shap_values = explainer(input_df_transformed)
     
     st.subheader("🔍 Decision Transparency (SHAP)")
     fig, ax = plt.subplots(figsize=(10, 4))
