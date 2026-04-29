@@ -6,6 +6,8 @@ from sklearn.preprocessing import PowerTransformer
 from scipy.stats import skew
 from gensim.models import Word2Vec
 
+def parse_hour(X):
+    return (X // 3600 % 24).rename(columns={'TransactionDT': 'Transaction_hour'})
 
 
 class AutoPowerTransformer(BaseEstimator, TransformerMixin):
