@@ -6,10 +6,6 @@ from sklearn.preprocessing import PowerTransformer
 from scipy.stats import skew
 from gensim.models import Word2Vec
 
-def parse_hour(X):
-    return (X // 3600 % 24).rename(columns={'TransactionDT': 'Transaction_hour'})
-
-
 class AutoPowerTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, threshold=0.75):
         self.threshold = threshold
@@ -243,6 +239,18 @@ class Word2VecTransformer(BaseEstimator, TransformerMixin):
             return np.mean(vectors, axis=0)
 
         return np.array([get_mean_vector(row[0]) for row in X])
+
+class TransactionHourExtractor(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X):
+        X_copy = X.copy()
+        if not isinstance(X_copy, pd.DataFrame):
+            X_copy = pd.DataFrame(X_copy)
+        X_copy['Transaction_hour'] = (X_copy['TransactionDT'] // 3600 % 24)
+        X_copy.drop(columns=['TransactionDT'], inplace=True, errors='ignore')
+        return X_copy
+
 
 # --- Usage Example ---
 # extractor = PairFeatureExtractor(window=60)
